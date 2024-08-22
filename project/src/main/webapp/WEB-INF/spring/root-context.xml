@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.3.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	
+	<!-- HikariCP Connection Pool -->
+	<bean id="hikariConfig"
+		class="com.zaxxer.hikari.HikariConfig">
+		
+		<property name="driverClassName"
+			value="net.sf.log4jdbc.sql.jdbcapi.DriverSpy"/>
+			
+		<property name="jdbcUrl"
+			value="jdbc:log4jdbc:oracle:thin:@localhost:1521:xe"/>
+		
+		<property name="username"
+			value="LIFE_MEAL"/>
+		<property name="password"
+			value="1234"/>
+	</bean>
+		
+	<!-- 커넥션 풀 -->
+	<bean id="dataSource"
+		class="com.zaxxer.hikari.HikariDataSource">
+		<constructor-arg ref="hikariConfig"/>
+	</bean>
+	
+	<!-- 세션 팩토리: 커넥션풀로 부터 커넥션을 얻어서 SQL문장을 실행할 놈 -->
+	<bean id="sqlSessionFactory"
+		class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="typeAliasesPackage" value="com.kh.project.domain"/>
+	</bean>
+	
+	<!-- 마이바티스 매퍼 파일 스캔 -->
+	<mybatis-spring:scan base-package="com.kh.project.mapper"/>
+	
+	<!-- AOP 기능 -->
+	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+	
+	<!-- @Transactional 사용 시 필요 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<!-- @Transactional -->
+	<tx:annotation-driven/>	
+	
+	<context:component-scan base-package="com.kh.project.service" />
+	<context:component-scan base-package="com.kh.project.task" />
+	
+	<task:annotation-driven/>		
+</beans>
